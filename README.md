@@ -1,127 +1,193 @@
 # Agent Sync for Copilot
 
-A Visual Studio Code extension that maintains a persistent, structured **agent context** across multiple machines sharing a remote workspace (e.g., via Remote SSH). Keep GitHub Copilot Chat grounded in your project's real state by preparing a concise, always-fresh summary ready to paste in seconds.
+A Visual Studio Code extension that keeps a **persistent, structured agent context** in your workspace and syncs it across any number of machines via a private GitHub repository. Keep GitHub Copilot Chat grounded in your project's real state — paste a fresh summary in one click from anywhere.
 
 ---
 
-## What It Does
+## Quick Start (5 minutes)
 
-The extension manages a `.agent-sync/` folder inside your workspace containing four files:
+### 1. Install the extension
+
+Download the latest `.vsix` from [Releases](https://github.com/elbada25/agent-sync-for-copilot/releases) and install it:
+
+```bash
+code --install-extension agent-sync-for-copilot-0.2.1.vsix --force
+```
+
+Or install from source (requires Node.js ≥ 18):
+
+```bash
+git clone https://github.com/elbada25/agent-sync-for-copilot.git
+cd agent-sync-for-copilot
+npm install
+npm run package
+code --install-extension agent-sync-for-copilot-0.2.1.vsix --force
+```
+
+### 2. Open a workspace
+
+Open any folder or remote SSH workspace in VS Code. The **Agent Sync** icon will appear in the Activity Bar on the left.
+
+### 3. Initialize the workspace
+
+Click the Agent Sync icon → click **Initialize Workspace** (or use `Ctrl+Shift+P` → `Agent Sync: Initialize Workspace`).
+
+This creates a `.agent-sync/` folder with four files:
 
 | File | Purpose |
 |------|---------|
-| `context.md` | Master project context: goals, decisions, architecture, issues, next tasks |
-| `summary.md` | Auto-generated concise digest, ready to paste directly into Copilot Chat |
-| `history.jsonl` | Append-only event log (JSON Lines): decisions, summary generations |
-| `config.json` | Per-workspace configuration (overrides VS Code settings) |
+| `context.md` | Your main project context: goals, decisions, architecture, open questions |
+| `summary.md` | Auto-generated concise digest — paste this into Copilot Chat |
+| `history.jsonl` | Append-only log of all decisions and events |
+| `config.json` | Per-workspace settings |
 
-Key features:
-- **Persistent context** — edit `context.md` on any machine; it lives on the remote
-- **Instant Copilot injection** — one click copies a structured summary to clipboard
-- **Auto-summary** — whenever `context.md` changes, `summary.md` is regenerated automatically (configurable)
-- **SHA-256 integrity** — `Sync Now` computes and stores file hashes so you can verify both machines see the same state
-- **Remote SSH compatible** — all file I/O uses `vscode.workspace.fs`, which works identically over SSH, Dev Containers, and WSL
+### 4. Fill in your context
+
+Click **Open Context** to open `context.md` and describe your project:
+- What it does and the tech stack
+- Current goals and what you are working on
+- Key architecture decisions already made
+
+### 5. Use it with Copilot Chat
+
+```
+Agent Sync: Generate Summary        ← builds summary.md from context.md
+Agent Sync: Copy Summary to Clipboard  ← one click
+```
+
+Paste the summary as the **first message** in a Copilot Chat session:
+
+```
+[paste summary here]
+
+Now help me with: <your question>
+```
+
+Copilot now has full awareness of your project without you re-explaining anything.
 
 ---
 
-## Installation (Development Mode)
+## Sidebar Panel
+
+Click the **Agent Sync** icon in the Activity Bar to open the panel. It has three sections:
+
+### Status
+Shows the local sync state:
+- `Ready` — `summary.md` is up to date
+- `Outdated` — `context.md` changed since the last summary
+
+### Actions
+All local commands as clickable buttons. Hover over any button to see a description of what it does.
+
+| Button | What it does |
+|--------|-------------|
+| Initialize Workspace | Creates `.agent-sync/` with template files (safe to run again) |
+| Open Context | Opens `context.md` in the editor |
+| Append Decision | Prompts for a note, appends it with timestamp to `context.md` and logs to `history.jsonl` |
+| Generate Summary | Rebuilds `summary.md` from your `context.md` |
+| Copy Summary to Clipboard | Copies `summary.md` — ready to paste into Copilot Chat |
+| View History | Opens a searchable list of all logged decisions; select one to copy its text |
+| Sync Now | Recomputes SHA-256 hashes and refreshes the status bar |
+
+### Cloud Sync
+Sync your context across machines via a private GitHub repo. Hover any item to see details.
+
+| Item / Button | What it shows / does |
+|---------------|----------------------|
+| Status | Whether cloud sync is configured on this machine |
+| Last Push | Timestamp of the last upload from this machine |
+| Last Pull | Timestamp of the last download to this machine |
+| Configure Cloud Sync | 3-step wizard to connect your GitHub account |
+| Push to Cloud | Uploads all 4 files to your GitHub data repo |
+| Pull from Cloud | Downloads files from GitHub and merges history |
+
+---
+
+## Cloud Sync — Multi-machine Setup
+
+Cloud sync uses a **private GitHub repository** as a neutral store. It works with any GitHub account.
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) ≥ 18
-- [Visual Studio Code](https://code.visualstudio.com/) ≥ 1.85
+A GitHub **Personal Access Token** (PAT) with the `repo` scope:
+1. Go to [github.com/settings/tokens](https://github.com/settings/tokens) → **Generate new token (classic)**
+2. Enable the `repo` scope
+3. Copy the token
 
-### Steps
+### Configure on each machine
 
-```bash
-# 1. Open this folder in VS Code
-cd agent-sync-for-copilot
+1. Click **Configure Cloud Sync** in the sidebar (or `Ctrl+Shift+P` → `Agent Sync: Configure Cloud Sync`)
+2. **Step 1** — Enter your GitHub PAT. The token is validated immediately and stored in the OS keychain (never written to disk).
+3. **Step 2** — Enter the data repo name (default: `agent-sync-data`). This is a private repo that will be created automatically in your GitHub account if it doesn't exist yet.
+4. **Step 3** — Confirmation. The wizard shows your username and the workspace slug (derived from the git remote or folder name) that identifies this workspace in the repo.
 
-# 2. Install dev dependencies
-npm install
+The configuration is per-machine. You can pre-fill the repo name via VS Code settings (see [Settings](#settings)) so the wizard always suggests the correct name without you typing it.
 
-# 3. Compile TypeScript
-npm run compile
+### Daily multi-machine workflow
 
-# 4. Press F5 to launch the Extension Development Host
+```
+Machine A (morning):
+  → Push to Cloud          ← uploads your latest context
+
+Machine B (continue work):
+  → Pull from Cloud        ← downloads context + merges history
+  → Open Context / work
+  → Append Decision        ← logs decisions locally
+  → Push to Cloud          ← sync back
+
+Machine A (later):
+  → Pull from Cloud        ← picks up changes from Machine B
 ```
 
-VS Code will open a new **Extension Development Host** window with the extension loaded. Open any folder or remote workspace in that window to start using it.
+History entries are **merged by timestamp** — no data is lost when pulling, even if both machines have new entries.
 
-To compile in watch mode (recommended during development):
+### Data structure in your GitHub repo
 
-```bash
-npm run watch
 ```
+agent-sync-data/                     ← your private data repo
+└── workspaces/
+    ├── myorg-my-api/                ← slug from git remote (owner-repo)
+    │   ├── context.md
+    │   ├── summary.md
+    │   ├── history.jsonl
+    │   └── config.json
+    └── my-local-project/            ← slug from folder name (fallback)
+        └── ...
+```
+
+Each workspace has its own folder identified by a slug derived from the git remote URL (`owner-repo`) or the workspace folder name if there is no git remote.
 
 ---
 
-## Commands
+## All Commands
 
-All commands are available in the **Command Palette** (`Ctrl+Shift+P` / `Cmd+Shift+P`) under the `Agent Sync` category:
+Available in the Command Palette (`Ctrl+Shift+P`) under the `Agent Sync` category, and as buttons in the sidebar panel.
 
-| Command | ID | Description |
-|---------|----|-------------|
-| **Initialize Workspace** | `agentSync.initializeWorkspace` | Creates `.agent-sync/` with default template files. Idempotent — safe to run multiple times; existing files are never overwritten. |
-| **Open Context** | `agentSync.openContext` | Opens `context.md` in the editor. |
-| **Append Decision** | `agentSync.appendDecision` | Prompts for a note or technical decision, appends it to `context.md` under the Decisions Log section, and records it in `history.jsonl`. |
-| **Generate Summary** | `agentSync.generateSummary` | Reads `context.md` and produces a concise `summary.md` using heuristic section extraction (no LLM required). |
-| **Copy Summary to Clipboard** | `agentSync.copySummaryToClipboard` | Copies `summary.md` to clipboard and shows a reminder to paste it into Copilot Chat. |
-| **Sync Now** | `agentSync.syncNow` | Computes SHA-256 hashes of both files, stores them in persistent extension state, and updates the status bar. |
-
----
-
-## Recommended Workflow with Copilot Chat
-
-### One-time setup
-
-1. Open your workspace (local or remote SSH) in VS Code.
-2. Run **`Agent Sync: Initialize Workspace`** — creates `.agent-sync/` with professional templates.
-3. Open **`context.md`** (via **`Agent Sync: Open Context`**) and fill in:
-   - _Project Overview_ — describe your stack, purpose, and team
-   - _Current Goals_ — what you are actively working on
-   - _Key Architecture Decisions_ — significant design choices
-
-### Daily workflow
-
-```
-Start of session:
-  → Agent Sync: Sync Now          — verify state and refresh status bar
-  → Agent Sync: Generate Summary  — rebuild summary from latest context
-  → Agent Sync: Copy Summary to Clipboard → paste into Copilot Chat as opening message
-
-During work:
-  → Agent Sync: Append Decision   — log significant technical choices as you make them
-  → Edit context.md directly      — auto-summary triggers on save (if enabled)
-
-End of session:
-  → Agent Sync: Generate Summary  — finalize summary
-  → Commit .agent-sync/ or leave on remote — it persists automatically
-```
-
-### Starting a Copilot Chat session
-
-Paste the copied summary as your **first message**, then ask your question:
-
-```
-[Paste summary here]
-
-Now help me with: <your specific question>
-```
-
-This gives Copilot full awareness of your project's architecture, goals, and recent decisions without re-explaining everything from scratch.
+| Command | Description |
+|---------|-------------|
+| `Agent Sync: Initialize Workspace` | Creates `.agent-sync/` with template files. Idempotent — never overwrites existing files. |
+| `Agent Sync: Open Context` | Opens `context.md` in the editor. |
+| `Agent Sync: Append Decision` | Prompts for a decision or note, appends it with timestamp to `context.md` and records it in `history.jsonl`. |
+| `Agent Sync: Generate Summary` | Reads `context.md` and produces a concise `summary.md` (no LLM required — uses heuristic section extraction). |
+| `Agent Sync: Copy Summary to Clipboard` | Copies `summary.md` to clipboard with a prompt to paste it into Copilot Chat. |
+| `Agent Sync: View History` | Shows all `history.jsonl` entries in a searchable Quick Pick list (newest first). Select an entry to copy its text. |
+| `Agent Sync: Sync Now` | Computes SHA-256 hashes of context files, stores them, and updates the status bar. |
+| `Agent Sync: Configure Cloud Sync` | Opens the 3-step wizard to link a GitHub account and data repo. |
+| `Agent Sync: Push to Cloud` | Uploads `context.md`, `summary.md`, `history.jsonl`, `config.json` to the GitHub data repo. |
+| `Agent Sync: Pull from Cloud` | Downloads files from the GitHub data repo. History is merged — local entries are preserved. |
 
 ---
 
 ## Settings
 
-Configure via **VS Code Settings** (`Ctrl+,`, search "Agent Sync") or by editing `.agent-sync/config.json` directly. The `config.json` file takes priority over VS Code settings.
+Configure via **VS Code Settings** (`Ctrl+,`, search `Agent Sync`) or by editing `.agent-sync/config.json` directly. `config.json` takes priority.
 
-| Setting | Key in `config.json` | Type | Default | Description |
-|---------|----------------------|------|---------|-------------|
-| Auto-generate summary on save | `autoGenerateSummaryOnSave` | `boolean` | `true` | Automatically regenerate `summary.md` when `context.md` changes. |
-| Max summary lines | `maxSummaryLines` | `number` | `50` | Maximum number of lines in the generated summary. |
-| Include workspace files | `includeWorkspaceFiles` | `boolean` | `false` | Include a list of tracked workspace files in the generated summary. |
+| VS Code Setting | Type | Default | Description |
+|-----------------|------|---------|-------------|
+| `agentSync.cloudDataRepo` | `string` | `agent-sync-data` | Name of the private GitHub repo used for cloud sync. Shared across machines via settings sync. The token is always stored in the OS keychain separately. |
+| `agentSync.autoGenerateSummaryOnSave` | `boolean` | `true` | Automatically regenerate `summary.md` when `context.md` changes. |
+| `agentSync.maxSummaryLines` | `number` | `50` | Maximum number of lines in the generated summary. |
+| `agentSync.includeWorkspaceFiles` | `boolean` | `false` | Include a list of tracked workspace files in the generated summary. |
 
 Example `.agent-sync/config.json`:
 
@@ -137,19 +203,14 @@ Example `.agent-sync/config.json`:
 
 ## Status Bar
 
-The status bar item at the bottom-left shows the current agent state:
+The status bar item at the bottom shows the current state:
 
-| State | Appearance | Meaning |
-|-------|-----------|---------|
-| Ready | `$(sync) AgentSync: Ready` | Summary is up to date |
-| Outdated | `$(warning) AgentSync: Outdated` | Context changed since last sync or summary is missing |
+| State | Meaning |
+|-------|---------|
+| `$(sync) AgentSync: Ready` | Summary is up to date |
+| `$(warning) AgentSync: Outdated` | `context.md` changed since the last summary |
 
 **Click** the status bar item to instantly copy the summary to clipboard.
-
-The status bar is updated:
-- When **`Sync Now`** runs
-- When `context.md` changes (sets Outdated)
-- When `summary.md` changes (sets Ready)
 
 ---
 
@@ -158,22 +219,22 @@ The status bar is updated:
 Every decision and summary generation is recorded as a JSON Lines entry:
 
 ```jsonl
-{"ts":"2026-04-08T10:30:00.000Z","type":"decision","text":"Switched to PostgreSQL"}
+{"ts":"2026-04-08T10:30:00.000Z","type":"decision","text":"Switched to PostgreSQL for better JSON support"}
 {"ts":"2026-04-08T10:35:00.000Z","type":"summary_generated"}
 ```
 
-This file is append-only and can be used for audit, diffing, or feeding into future tooling.
+Entries are deduplicated by `ts` during cloud pull — so pulling from multiple machines never creates duplicate records.
 
 ---
 
-## Remote SSH Notes
+## Remote SSH & Dev Containers
 
-This extension is designed for remote-first usage:
+This extension runs on the **local machine** (`"extensionKind": ["ui"]`) even when the workspace is on a remote host. This means:
 
-- **`vscode.workspace.fs`** is used for all file I/O — it is the VS Code virtual filesystem API, which works identically over local, Remote SSH, Dev Container, and WSL connections.
-- The `.agent-sync/` folder lives **on the remote machine** inside the workspace, so it is automatically accessible from any machine connecting to the same remote.
-- The SHA-256 hash from **`Sync Now`** lets you verify that both machines are looking at exactly the same version of `context.md`.
-- File watchers (`createFileSystemWatcher`) detect changes made from any machine connected to the remote, including background edits by other tools.
+- The sidebar, cloud sync, and all commands work over Remote SSH, WSL, and Dev Containers
+- All file I/O uses `vscode.workspace.fs` — the VS Code virtual filesystem, transparent over any connection
+- The GitHub token is stored in the **local** OS keychain (not on the remote server)
+- The `.agent-sync/` folder lives on the **remote** machine, inside the workspace — accessible from any client connecting to the same host
 
 ---
 
@@ -181,23 +242,35 @@ This extension is designed for remote-first usage:
 
 ```
 src/
-├── extension.ts                  # Entry point — activate / deactivate
+├── extension.ts
 ├── commands/
-│   ├── initializeWorkspace.ts    # Creates .agent-sync/ with template files
-│   ├── openContext.ts            # Opens context.md in editor
-│   ├── appendDecision.ts         # Logs a decision to context.md + history.jsonl
-│   ├── generateSummary.ts        # Heuristic summary extraction → summary.md
-│   ├── copySummaryToClipboard.ts # Copies summary.md to clipboard
-│   └── syncNow.ts                # SHA-256 integrity check + status bar update
+│   ├── initializeWorkspace.ts
+│   ├── openContext.ts
+│   ├── appendDecision.ts
+│   ├── generateSummary.ts
+│   ├── copySummaryToClipboard.ts
+│   ├── syncNow.ts
+│   ├── viewHistory.ts           # Quick Pick history browser
+│   ├── configureSync.ts         # Cloud sync wizard (3 steps)
+│   ├── cloudPush.ts             # Upload to GitHub data repo
+│   └── cloudPull.ts             # Download + merge from GitHub data repo
 ├── services/
-│   ├── configService.ts          # Loads config.json / VS Code settings
-│   ├── fileService.ts            # All file I/O via vscode.workspace.fs
-│   ├── hashService.ts            # SHA-256 via Node.js built-in crypto
-│   └── watcherService.ts         # FileSystemWatcher lifecycle management
+│   ├── configService.ts
+│   ├── fileService.ts
+│   ├── hashService.ts
+│   ├── watcherService.ts
+│   ├── stateService.ts          # In-memory state (status, cloud timestamps)
+│   ├── secretService.ts         # vscode.SecretStorage wrapper (GitHub PAT)
+│   ├── workspaceIdService.ts    # Derives workspace slug from git remote
+│   ├── githubSyncService.ts     # GitHub Contents API (no npm deps)
+│   └── cloudSyncService.ts      # Push/pull orchestrator with history merge
+├── views/
+│   └── agentSyncTreeProvider.ts # Sidebar tree with tooltips
 └── utils/
-    ├── logger.ts                 # Output channel "Agent Sync"
-    ├── statusBar.ts              # Status bar item (Ready / Outdated)
-    └── templates.ts              # Default content for generated files
+    ├── logger.ts
+    ├── statusBar.ts
+    └── templates.ts
+```
 ```
 
 ---
