@@ -3,19 +3,34 @@ import * as path from 'path';
 import { fileExists, readFile, appendToFile } from '../services/fileService';
 import { getState } from '../services/stateService';
 import { log } from '../utils/logger';
+import { aiCaptureContext } from './aiCaptureContext';
 
 const AGENT_SYNC_DIR = '.agent-sync';
 
 export function registerChatParticipant(
     ctx: vscode.ExtensionContext,
-    workspaceRoot: string
+    workspaceRoot: string,
+    secrets: vscode.SecretStorage
 ): vscode.Disposable {
     const participant = vscode.chat.createChatParticipant(
         'agentSync.assistant',
-        async (request, _chatCtx, stream, _token) => {
+        async (request, _chatCtx, stream, token) => {
             const summaryPath = path.join(workspaceRoot, AGENT_SYNC_DIR, 'summary.md');
             const contextPath = path.join(workspaceRoot, AGENT_SYNC_DIR, 'context.md');
             const historyPath = path.join(workspaceRoot, AGENT_SYNC_DIR, 'history.jsonl');
+
+            // /capture — use Copilot LM to analyze workspace and generate context.md
+            if (request.command === 'capture') {
+                stream.markdown('**Analyzing workspace with Copilot…**\n\nReading files and generating `context.md`. This may take a moment.\n\n---\n\n');
+                const result = await aiCaptureContext(workspaceRoot, secrets, token, stream);
+                if (result) {
+                    stream.markdown(
+                        `\n\n---\n\n✅ **context.md saved** (${result.split('\n').length} lines)\n\n` +
+                        `Run \`@agent-sync /save <decision>\` to log further decisions, or use **Push to Cloud** in the sidebar to sync to other machines.`
+                    );
+                }
+                return;
+            }
 
             // /save <text> — append a decision
             if (request.command === 'save') {
@@ -100,7 +115,7 @@ export function registerChatParticipant(
 
             const summary = await readFile(summaryPath);
             stream.markdown(`\n\n---\n\n${summary}`);
-            stream.markdown(`\n\n---\n\n*Tip: use \`@agent-sync /save <decision>\` to log a decision, \`/context\` to view full context.md, \`/history\` for the decision log.*`);
+            stream.markdown(`\n\n---\n\n*Tip: \`@agent-sync /capture\` — let Copilot auto-generate context.md from the workspace · \`/save <decision>\` — log a decision · \`/context\` — view context.md · \`/history\` — decision log*`);
         }
     );
 

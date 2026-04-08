@@ -138,6 +138,15 @@ export class AgentSyncTreeProvider implements vscode.TreeDataProvider<AgentSyncN
                         'Scans the workspace for agent files (`.github/copilot-instructions.md`, `AGENTS.md`, `CLAUDE.md`, `*.instructions.md`, `*.prompt.md`, `README.md`, `package.json`) and uses them to auto-populate `context.md`.'
                     ),
                     new AgentSyncNode(
+                        'action-ai-capture',
+                        'AI Capture Context',
+                        undefined,
+                        'sparkle',
+                        'agentSync.aiCaptureContext',
+                        undefined,
+                        '**Uses Copilot AI** to analyze the entire workspace — file structure, source files, config, agent instructions — and generates a comprehensive `context.md` automatically.\n\nAlso available as `@agent-sync /capture` in Copilot Chat.'
+                    ),
+                    new AgentSyncNode(
                         'action-open',
                         'Open Context',
                         undefined,

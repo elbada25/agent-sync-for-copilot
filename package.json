@@ -2,7 +2,7 @@
   "name": "agent-sync-for-copilot",
   "displayName": "Agent Sync for Copilot",
   "description": "Synchronize persistent agent context between machines sharing a remote workspace",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "publisher": "agent-sync",
   "engines": {
     "vscode": "^1.90.0"
@@ -116,6 +116,12 @@
         "title": "Detect Context from Workspace",
         "category": "Agent Sync",
         "icon": "$(search)"
+      },
+      {
+        "command": "agentSync.aiCaptureContext",
+        "title": "AI Capture Context",
+        "category": "Agent Sync",
+        "icon": "$(sparkle)"
       }
     ],
     "menus": {
@@ -154,6 +160,7 @@
         "description": "Query and update your agent context from Copilot Chat",
         "isSticky": false,
         "commands": [
+          { "name": "capture", "description": "Let Copilot analyze the workspace and auto-generate context.md, then push to cloud" },
           { "name": "save", "description": "Save a decision or note to context.md and history.jsonl" },
           { "name": "context", "description": "Show the full contents of context.md" },
           { "name": "history", "description": "Show the last 10 entries from history.jsonl" }

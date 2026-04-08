@@ -17,6 +17,7 @@ import { cloudPull } from './commands/cloudPull';
 import { viewHistory } from './commands/viewHistory';
 import { registerChatParticipant } from './commands/agentSyncParticipant';
 import { detectContext } from './commands/detectContext';
+import { aiCaptureContext } from './commands/aiCaptureContext';
 
 export function activate(ctx: vscode.ExtensionContext): void {
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -131,10 +132,17 @@ export function activate(ctx: vscode.ExtensionContext): void {
                 treeProvider.refresh();
             }
         ),
+        vscode.commands.registerCommand(
+            'agentSync.aiCaptureContext',
+            async () => {
+                await aiCaptureContext(workspaceRoot, ctx.secrets);
+                treeProvider.refresh();
+            }
+        ),
         treeView,
         statusBar,
         watcher,
-        registerChatParticipant(ctx, workspaceRoot),
+        registerChatParticipant(ctx, workspaceRoot, ctx.secrets),
         { dispose: () => disposeChannel() }
     );
 
