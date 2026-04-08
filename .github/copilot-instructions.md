@@ -18,7 +18,7 @@ The extension maintains a `.agent-sync/` folder in each workspace with `context.
 - [x] v0.1.0: Core local context management (6 commands, sidebar panel, SSH support)
 - [x] v0.2.0: Cloud sync via private GitHub repo (push/pull with history merge)
 - [x] v0.2.1: Tooltips, View History command, cloudDataRepo setting
-- [x] v0.3.0: Auto-inject context into Copilot Chat via copilot-instructions.md + @agent-sync Chat Participant
+- [x] v0.3.1: Fix viewHistory crash (entry.text undefined), surface workspace slug in cloud pull warnings
 
 
 ## Key Architecture Decisions
@@ -41,5 +41,6 @@ The extension maintains a `.agent-sync/` folder in each workspace with `context.
 1. Publish to VS Code Marketplace (requires publisher account setup)
 2. Add `.agent-sync/` to `.gitignore` recommendation in README
 3. Consider prompt.md files for structured prompts per workspace
+4. Show workspace slug in Cloud Sync sidebar node for easy cross-machine comparison
 
 <!-- agent-sync:end -->
