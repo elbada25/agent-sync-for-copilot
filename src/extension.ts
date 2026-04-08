@@ -11,6 +11,9 @@ import { appendDecision } from './commands/appendDecision';
 import { generateSummary } from './commands/generateSummary';
 import { copySummaryToClipboard } from './commands/copySummaryToClipboard';
 import { syncNow } from './commands/syncNow';
+import { configureSync } from './commands/configureSync';
+import { cloudPush } from './commands/cloudPush';
+import { cloudPull } from './commands/cloudPull';
 
 export function activate(ctx: vscode.ExtensionContext): void {
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -92,6 +95,27 @@ export function activate(ctx: vscode.ExtensionContext): void {
         vscode.commands.registerCommand(
             'agentSync.refreshView',
             () => treeProvider.refresh()
+        ),
+        vscode.commands.registerCommand(
+            'agentSync.configureSync',
+            async () => {
+                const ok = await configureSync(workspaceRoot, ctx.secrets);
+                if (ok) { treeProvider.refresh(); }
+            }
+        ),
+        vscode.commands.registerCommand(
+            'agentSync.cloudPush',
+            async () => {
+                await cloudPush(workspaceRoot, ctx.secrets);
+                treeProvider.refresh();
+            }
+        ),
+        vscode.commands.registerCommand(
+            'agentSync.cloudPull',
+            async () => {
+                await cloudPull(workspaceRoot, ctx.secrets);
+                treeProvider.refresh();
+            }
         ),
         treeView,
         statusBar,

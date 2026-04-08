@@ -2,7 +2,7 @@
   "name": "agent-sync-for-copilot",
   "displayName": "Agent Sync for Copilot",
   "description": "Synchronize persistent agent context between machines sharing a remote workspace",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "agent-sync",
   "engines": {
     "vscode": "^1.85.0"
@@ -86,6 +86,24 @@
         "title": "Refresh",
         "category": "Agent Sync",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "agentSync.configureSync",
+        "title": "Configure Cloud Sync",
+        "category": "Agent Sync",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "agentSync.cloudPush",
+        "title": "Push to Cloud",
+        "category": "Agent Sync",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "agentSync.cloudPull",
+        "title": "Pull from Cloud",
+        "category": "Agent Sync",
+        "icon": "$(cloud-download)"
       }
     ],
     "menus": {
@@ -99,6 +117,21 @@
           "command": "agentSync.refreshView",
           "when": "view == agentSyncView",
           "group": "navigation@2"
+        },
+        {
+          "command": "agentSync.configureSync",
+          "when": "view == agentSyncView",
+          "group": "navigation@3"
+        },
+        {
+          "command": "agentSync.cloudPush",
+          "when": "view == agentSyncView",
+          "group": "navigation@4"
+        },
+        {
+          "command": "agentSync.cloudPull",
+          "when": "view == agentSyncView",
+          "group": "navigation@5"
         }
       ]
     },

@@ -145,6 +145,67 @@ export class AgentSyncTreeProvider implements vscode.TreeDataProvider<AgentSyncN
                     undefined
                 ),
             ]),
+            new AgentSyncNode(
+                'cloud-section',
+                'Cloud Sync',
+                undefined,
+                undefined,
+                undefined,
+                [
+                    new AgentSyncNode(
+                        'cloud-status',
+                        'Status',
+                        state.cloudConfigured ? 'Configured' : 'Not configured',
+                        state.cloudConfigured ? 'cloud' : 'cloud-slash',
+                        undefined,
+                        undefined
+                    ),
+                    new AgentSyncNode(
+                        'cloud-last-push',
+                        'Last Push',
+                        state.cloudLastPushAt
+                            ? new Date(state.cloudLastPushAt).toLocaleTimeString()
+                            : 'Never',
+                        'cloud-upload',
+                        undefined,
+                        undefined
+                    ),
+                    new AgentSyncNode(
+                        'cloud-last-pull',
+                        'Last Pull',
+                        state.cloudLastPullAt
+                            ? new Date(state.cloudLastPullAt).toLocaleTimeString()
+                            : 'Never',
+                        'cloud-download',
+                        undefined,
+                        undefined
+                    ),
+                    new AgentSyncNode(
+                        'action-configure-sync',
+                        'Configure Cloud Sync',
+                        undefined,
+                        'gear',
+                        'agentSync.configureSync',
+                        undefined
+                    ),
+                    new AgentSyncNode(
+                        'action-cloud-push',
+                        'Push to Cloud',
+                        undefined,
+                        'cloud-upload',
+                        'agentSync.cloudPush',
+                        undefined
+                    ),
+                    new AgentSyncNode(
+                        'action-cloud-pull',
+                        'Pull from Cloud',
+                        undefined,
+                        'cloud-download',
+                        'agentSync.cloudPull',
+                        undefined
+                    ),
+                ]
+            ),
         ];
     }
 }
