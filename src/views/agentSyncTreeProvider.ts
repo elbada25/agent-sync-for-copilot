@@ -129,6 +129,15 @@ export class AgentSyncTreeProvider implements vscode.TreeDataProvider<AgentSyncN
                         'Creates `.agent-sync/` folder with `context.md`, `summary.md`, `history.jsonl`, and `config.json` in the current workspace.'
                     ),
                     new AgentSyncNode(
+                        'action-detect',
+                        'Detect Context from Workspace',
+                        undefined,
+                        'search',
+                        'agentSync.detectContext',
+                        undefined,
+                        'Scans the workspace for agent files (`.github/copilot-instructions.md`, `AGENTS.md`, `CLAUDE.md`, `*.instructions.md`, `*.prompt.md`, `README.md`, `package.json`) and uses them to auto-populate `context.md`.'
+                    ),
+                    new AgentSyncNode(
                         'action-open',
                         'Open Context',
                         undefined,

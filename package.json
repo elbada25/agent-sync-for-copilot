@@ -2,7 +2,7 @@
   "name": "agent-sync-for-copilot",
   "displayName": "Agent Sync for Copilot",
   "description": "Synchronize persistent agent context between machines sharing a remote workspace",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "publisher": "agent-sync",
   "engines": {
     "vscode": "^1.90.0"
@@ -110,6 +110,12 @@
         "title": "Pull from Cloud",
         "category": "Agent Sync",
         "icon": "$(cloud-download)"
+      },
+      {
+        "command": "agentSync.detectContext",
+        "title": "Detect Context from Workspace",
+        "category": "Agent Sync",
+        "icon": "$(search)"
       }
     ],
     "menus": {
