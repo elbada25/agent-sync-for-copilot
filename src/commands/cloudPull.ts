@@ -50,11 +50,16 @@ export async function cloudPull(
                 `skipped: [${result.skipped.join(', ')}], ts: ${ts}`
         );
 
-        const msg =
-            result.pulled.length > 0
-                ? `Agent Sync: Pulled ${result.pulled.join(', ')} from ${user.login}/${dataRepo}`
-                : `Agent Sync: Nothing new to pull from ${user.login}/${dataRepo}`;
-        vscode.window.showInformationMessage(msg);
+        if (result.pulled.length > 0) {
+            vscode.window.showInformationMessage(
+                `Agent Sync: Pulled ${result.pulled.join(', ')} from ${user.login}/${dataRepo}`
+            );
+        } else {
+            vscode.window.showWarningMessage(
+                `Agent Sync: Nothing was pulled. Searched in ${user.login}/${dataRepo}/workspaces/${slug}/ — ` +
+                    `verify the workspace slug matches across machines.`
+            );
+        }
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         vscode.window.showErrorMessage(`Agent Sync: Cloud pull failed — ${msg}`);

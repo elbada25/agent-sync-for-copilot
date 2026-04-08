@@ -5,7 +5,7 @@ import { log } from '../utils/logger';
 interface HistoryEntry {
     ts: string;
     type: string;
-    text: string;
+    text?: string;
 }
 
 function parseHistory(raw: string): HistoryEntry[] {
@@ -27,7 +27,8 @@ function formatEntryLabel(entry: HistoryEntry): string {
     const date = new Date(entry.ts);
     const dateStr = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
     const typeLabel = entry.type === 'decision' ? '📝' : '⚡';
-    const preview = entry.text.length > 80 ? entry.text.slice(0, 80) + '…' : entry.text;
+    const text = entry.text ?? '';
+    const preview = text.length > 80 ? text.slice(0, 80) + '…' : text || `(${entry.type})`;
     return `${typeLabel}  ${preview}`;
 }
 
@@ -65,7 +66,7 @@ export async function viewHistory(workspaceRoot: string): Promise<void> {
         return {
             label: formatEntryLabel(entry),
             description: dateStr,
-            detail: entry.text,
+            detail: entry.text ?? `(${entry.type})`,
         };
     });
 

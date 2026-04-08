@@ -143,7 +143,7 @@ export async function cloudPullFiles(
 
         if (!remote) {
             skipped.push(f.name);
-            log(`Cloud pull: ${f.name} not in remote — skipped`);
+            log(`Cloud pull: ${f.name} not found at ${cfg.owner}/${cfg.dataRepo}/${f.remotePath} — skipped`);
             continue;
         }
 
