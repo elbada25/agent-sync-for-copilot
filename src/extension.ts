@@ -14,6 +14,7 @@ import { syncNow } from './commands/syncNow';
 import { configureSync } from './commands/configureSync';
 import { cloudPush } from './commands/cloudPush';
 import { cloudPull } from './commands/cloudPull';
+import { viewHistory } from './commands/viewHistory';
 
 export function activate(ctx: vscode.ExtensionContext): void {
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -95,6 +96,10 @@ export function activate(ctx: vscode.ExtensionContext): void {
         vscode.commands.registerCommand(
             'agentSync.refreshView',
             () => treeProvider.refresh()
+        ),
+        vscode.commands.registerCommand(
+            'agentSync.viewHistory',
+            () => viewHistory(workspaceRoot)
         ),
         vscode.commands.registerCommand(
             'agentSync.configureSync',

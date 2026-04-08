@@ -35,7 +35,9 @@ export async function configureSync(
     }
 
     // Step 2: Data repository name
-    const existingRepo = (await getDataRepo(secrets)) ?? 'agent-sync-data';
+    // Prefer SecretStorage value, then VS Code setting, then default
+    const settingRepo = vscode.workspace.getConfiguration('agentSync').get<string>('cloudDataRepo');
+    const existingRepo = (await getDataRepo(secrets)) ?? settingRepo ?? 'agent-sync-data';
     const repoName = await vscode.window.showInputBox({
         title: `Agent Sync Cloud — Step 2/3: Data Repository (user: ${owner})`,
         prompt: 'Name of the private GitHub repo to store your sync data (created automatically if needed)',
@@ -72,9 +74,12 @@ export async function configureSync(
         }
     }
 
-    // Persist to SecretStorage
+    // Persist to SecretStorage and to VS Code settings (non-secret part)
     await saveToken(secrets, token.trim());
     await saveDataRepo(secrets, repoName.trim());
+    await vscode.workspace
+        .getConfiguration('agentSync')
+        .update('cloudDataRepo', repoName.trim(), vscode.ConfigurationTarget.Global);
     setState({ cloudConfigured: true });
 
     const slug = getWorkspaceSlug(workspaceRoot);

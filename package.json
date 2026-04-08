@@ -2,7 +2,7 @@
   "name": "agent-sync-for-copilot",
   "displayName": "Agent Sync for Copilot",
   "description": "Synchronize persistent agent context between machines sharing a remote workspace",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "agent-sync",
   "engines": {
     "vscode": "^1.85.0"
@@ -82,6 +82,12 @@
         "icon": "$(sync)"
       },
       {
+        "command": "agentSync.viewHistory",
+        "title": "View History",
+        "category": "Agent Sync",
+        "icon": "$(list-flat)"
+      },
+      {
         "command": "agentSync.refreshView",
         "title": "Refresh",
         "category": "Agent Sync",
@@ -138,6 +144,11 @@
     "configuration": {
       "title": "Agent Sync",
       "properties": {
+        "agentSync.cloudDataRepo": {
+          "type": "string",
+          "default": "agent-sync-data",
+          "description": "Name of the private GitHub repository used to store sync data. Can be set on each machine so the 'Configure Cloud Sync' wizard pre-fills it. Works with any GitHub account — the token is always stored securely in the OS keychain."
+        },
         "agentSync.autoGenerateSummaryOnSave": {
           "type": "boolean",
           "default": true,
