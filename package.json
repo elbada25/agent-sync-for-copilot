@@ -2,10 +2,10 @@
   "name": "agent-sync-for-copilot",
   "displayName": "Agent Sync for Copilot",
   "description": "Synchronize persistent agent context between machines sharing a remote workspace",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "publisher": "agent-sync",
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.90.0"
   },
   "categories": [
     "Other"
@@ -141,9 +141,27 @@
         }
       ]
     },
+    "chatParticipants": [
+      {
+        "id": "agentSync.assistant",
+        "name": "agent-sync",
+        "description": "Query and update your agent context from Copilot Chat",
+        "isSticky": false,
+        "commands": [
+          { "name": "save", "description": "Save a decision or note to context.md and history.jsonl" },
+          { "name": "context", "description": "Show the full contents of context.md" },
+          { "name": "history", "description": "Show the last 10 entries from history.jsonl" }
+        ]
+      }
+    ],
     "configuration": {
       "title": "Agent Sync",
       "properties": {
+        "agentSync.syncToInstructions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically sync summary.md into .github/copilot-instructions.md after each Generate Summary. This makes Copilot Chat aware of your project context without pasting anything."
+        },
         "agentSync.cloudDataRepo": {
           "type": "string",
           "default": "agent-sync-data",
@@ -178,7 +196,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "@types/vscode": "^1.85.0",
+    "@types/vscode": "^1.90.0",
     "@vscode/vsce": "^3.0.0",
     "typescript": "^5.3.3"
   }

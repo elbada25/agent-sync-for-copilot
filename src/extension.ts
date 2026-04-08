@@ -15,6 +15,7 @@ import { configureSync } from './commands/configureSync';
 import { cloudPush } from './commands/cloudPush';
 import { cloudPull } from './commands/cloudPull';
 import { viewHistory } from './commands/viewHistory';
+import { registerChatParticipant } from './commands/agentSyncParticipant';
 
 export function activate(ctx: vscode.ExtensionContext): void {
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -125,6 +126,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
         treeView,
         statusBar,
         watcher,
+        registerChatParticipant(ctx, workspaceRoot),
         { dispose: () => disposeChannel() }
     );
 

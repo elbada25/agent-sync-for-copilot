@@ -7,6 +7,7 @@ import {
     fileExists,
 } from '../services/fileService';
 import { AgentConfig } from '../services/configService';
+import { syncSummaryToInstructions } from '../services/instructionsService';
 import { log } from '../utils/logger';
 
 const IMPORTANT_SECTIONS = [
@@ -86,6 +87,7 @@ export async function generateSummary(
         const content = await readFile(contextPath);
         const summaryText = extractSummary(content, config.maxSummaryLines);
         await writeFile(summaryPath, summaryText);
+        await syncSummaryToInstructions(workspaceRoot);
 
         const ts = new Date().toISOString();
         const record = JSON.stringify({ ts, type: 'summary_generated' });
