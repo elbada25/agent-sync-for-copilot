@@ -1,0 +1,141 @@
+{
+  "name": "agent-sync-for-copilot",
+  "displayName": "Agent Sync for Copilot",
+  "description": "Synchronize persistent agent context between machines sharing a remote workspace",
+  "version": "0.1.0",
+  "publisher": "agent-sync",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "copilot",
+    "agent",
+    "sync",
+    "context",
+    "remote"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agent-sync/agent-sync-for-copilot"
+  },
+  "extensionKind": ["ui"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "agent-sync-sidebar",
+          "title": "Agent Sync for Copilot",
+          "icon": "images/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "agent-sync-sidebar": [
+        {
+          "id": "agentSyncView",
+          "name": "Agent Sync"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "agentSync.initializeWorkspace",
+        "title": "Initialize Workspace",
+        "category": "Agent Sync",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "agentSync.openContext",
+        "title": "Open Context",
+        "category": "Agent Sync",
+        "icon": "$(file-text)"
+      },
+      {
+        "command": "agentSync.appendDecision",
+        "title": "Append Decision",
+        "category": "Agent Sync",
+        "icon": "$(add)"
+      },
+      {
+        "command": "agentSync.generateSummary",
+        "title": "Generate Summary",
+        "category": "Agent Sync",
+        "icon": "$(list-ordered)"
+      },
+      {
+        "command": "agentSync.copySummaryToClipboard",
+        "title": "Copy Summary to Clipboard",
+        "category": "Agent Sync",
+        "icon": "$(clippy)"
+      },
+      {
+        "command": "agentSync.syncNow",
+        "title": "Sync Now",
+        "category": "Agent Sync",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "agentSync.refreshView",
+        "title": "Refresh",
+        "category": "Agent Sync",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "agentSync.syncNow",
+          "when": "view == agentSyncView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "agentSync.refreshView",
+          "when": "view == agentSyncView",
+          "group": "navigation@2"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Agent Sync",
+      "properties": {
+        "agentSync.autoGenerateSummaryOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically regenerate summary.md when context.md is saved or changed."
+        },
+        "agentSync.maxSummaryLines": {
+          "type": "number",
+          "default": 50,
+          "minimum": 5,
+          "maximum": 500,
+          "description": "Maximum number of lines in the generated summary."
+        },
+        "agentSync.includeWorkspaceFiles": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include a list of tracked workspace files in the generated summary."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package --no-dependencies --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.3.3"
+  }
+}
